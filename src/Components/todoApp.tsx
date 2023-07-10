@@ -11,7 +11,7 @@ const TodoList: React.FC = () => {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingText, setEditingText] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [arrowDirection, setArrowDirection] = useState<'up' | 'down'>('down');
 
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setCurrentTask(event.target.value);
@@ -19,7 +19,7 @@ const TodoList: React.FC = () => {
 
   const handleAddTask = () => {
     if (currentTask.trim() !== '') {
-      setTasks((prevTasks) => [...prevTasks, { text: currentTask, completed: false }]);
+      setTasks((prevTasks) => [{ text: currentTask, completed: false }, ...prevTasks]);
       setCurrentTask('');
     }
   };
@@ -62,20 +62,13 @@ const TodoList: React.FC = () => {
   };
 
   const handleSortOrder = () => {
-    setSortOrder((prevOrder) => (prevOrder === 'asc' ? 'desc' : 'asc'));
+    setTasks((prevTasks) => [...prevTasks].reverse());
+    setArrowDirection((prevDirection) => (prevDirection === 'up' ? 'down' : 'up'));
   };
 
   const filteredTasks = tasks.filter((task) =>
     task.text.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const sortedTasks = filteredTasks.sort((a, b) => {
-    if (sortOrder === 'asc') {
-      return a.text.localeCompare(b.text);
-    } else {
-      return b.text.localeCompare(a.text);
-    }
-  });
 
   return (
     <div className="container">
@@ -103,23 +96,14 @@ const TodoList: React.FC = () => {
             className="search-input"
           />
           <button onClick={handleSortOrder} className="sort-button">
-            {sortOrder === 'asc' ? '↑' : '↓'}
+            {arrowDirection === 'up' ? '↑' : '↓'}
           </button>
         </div>
       )}
-      {sortedTasks.length > 0 ? (
+      {filteredTasks.length > 0 ? (
         <ul className="task-list">
-          {sortedTasks.map((task, index) => (
+          {filteredTasks.map((task, index) => (
             <li key={index} className={`task-item ${task.completed ? 'completed' : ''}`}>
-              <input
-                type="checkbox"
-                checked={task.completed}
-                onChange={() => {
-                  const updatedTasks = [...tasks];
-                  updatedTasks[index].completed = !updatedTasks[index].completed;
-                  setTasks(updatedTasks);
-                }}
-              />
               {editingIndex === index ? (
                 <>
                   <textarea
